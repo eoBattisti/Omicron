@@ -1,0 +1,7 @@
+setup.py
+omicron.egg-info/PKG-INFO
+omicron.egg-info/SOURCES.txt
+omicron.egg-info/dependency_links.txt
+omicron.egg-info/entry_points.txt
+omicron.egg-info/requires.txt
+omicron.egg-info/top_level.txt
