@@ -6,6 +6,8 @@ Options names:
 
 Commands:
 
+open = abre um arquivo
+
 move = move um arquivo pra outro diretório
 	-- possibilitar mover mais de um
 
@@ -24,3 +26,5 @@ listFiles = lista os arquivos de um diretório
 		-c	--codes = lista todos os códigos
 
 organize = organiza os arquivos de um diretório
+
+extract = extrai arquivos zip e .rar
