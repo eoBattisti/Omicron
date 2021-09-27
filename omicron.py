@@ -1,18 +1,14 @@
 from os import scandir
+import os
+import pathlib
 import click
 import os.path
 import shutil
+import zipfile
 
 from datetime import datetime
 from pathlib import Path
 
-
-def verify_dir(directory):
-    if  os.path.isdir(directory):
-        return True
-    else:
-        click.secho("Please write a valid directory", fg='bright_red')
-        return False
 
 def fileAtLocation(filename, path):
     if os.path.exists(path + "/" + filename):
@@ -20,12 +16,6 @@ def fileAtLocation(filename, path):
     else:
         click.secho(f'{filename} is not in {path}, please enter a valid filename', fg='bright_red')
 # Verifica se o nome do arquivo realmente é um arquivo existe
-def verify_file(filename) -> bool:
-    if os.path.isfile(filename):
-        return True
-    else:
-        click.secho("Please write a valid file", fg='bright_red')
-        return False
 
 def isImage(file) -> bool:
     if file.endswith(".jpg") or file.endswith(".png") or file.endswith(".svg") or file.endswith(".jpeg") or file.endswith(".gif")  or file.endswith(".ico"): 
@@ -74,22 +64,20 @@ def options():
 
 # Move a file to a directory
 @click.command(name='move')
-@click.option('-fl', '--filename', type=str, required=True )
-@click.option('-fr', '--fromn', type=str, required=True)
-@click.option('-t', '--to', type=str, required=True )
-def move_file(filename, fromn , to):
+@click.argument('filename', type=str, nargs=1, required=True)
+@click.argument('dict_too', type=click.Path(exists=True, allow_dash=True, path_type=pathlib.Path), required=True )
+def move_file(filename, dict_from , dict_too):
     """Move a file from a  directory to another"""
-    if(verify_file(filename) and verify_dir(fromn) and verify_dir(to)):
-        shutil.move(filename, to)
-        click.secho(f'{filename} moved to {to}', fg='green')
+    if os.path.isfile(filename):
+        shutil.move(filename,dict_too)
+        click.secho(f'{filename} moved to {dict_too}', fg='green')
 
 
 
 @click.command(name='delete')
-@click.option('--all/--one', default=False)
-@click.option('-f', '--filename',  type=str)
-@click.option('-d', '--directory', type=str, required=True)
-def delete_file(filename, directory, all):
+@click.argument('directory', type=click.Path(exists=True, allow_dash=True, path_type=pathlib.Path), required=True)
+@click.option('--all/--one', default=False, help="Delete one file or all file's directory")
+def delete_file(directory, all):
     """Delete a file from a directory"""
     # Delete all files from a directory
     if all:
@@ -98,20 +86,21 @@ def delete_file(filename, directory, all):
                 os.remove(directory + "/" + files)
                 click.secho(f'{files}: successfully deleted', fg='green')
     else:
+        
+        filename = click.prompt(click.style("What file you want to remove", fg='bright_cyan'), type=str)
         # if the file is in the current directory, delete it
-        filename = click.prompt(click.style("What file you wnat to remove", fg='bright_cyan'), type=str)
         if fileAtLocation(filename, directory):
             os.remove(directory + "/" + filename)
             click.secho(f'{filename} deleted', fg='green')
 
 
 @click.command(name='listFiles')
-@click.option('-d', '--directory', type=str, required=True)
+@click.argument('directory', type=click.Path(exists=True, allow_dash=True, path_type=pathlib.Path), required=True)
 def listFiles(directory):
     """ List all files from a directory"""
     # Verify if the directory exists
     dir_files = scandir(directory)
-    if verify_dir(directory):
+    if os.path.isdir(directory):
         for file in dir_files:
             # Verify if the file exist in the current directory
             if file.is_file():
@@ -120,53 +109,62 @@ def listFiles(directory):
 
 
 @click.command(name='organize')
-@click.option('-d', '--directory', type=str, required=True)
+@click.argument('directory', type=click.Path(exists=True, allow_dash=True, path_type=pathlib.Path), required=True)
 def organize(directory): 
     """ Organize all files from a directory """
-    if verify_dir(directory):
-        for file in os.listdir(directory):
-            if fileAtLocation(file, directory):
-                # Identify if the file is an Image .jpg .png .jpeg .svg .gif or .ico
-                if isImage(file):
-                    path = Path(directory + "/" + "Images/")
-                    file = directory + "/" + file
-                    path.mkdir(exist_ok=True)
-                    shutil.move(file, path)
+    for file in os.listdir(directory):
+        if fileAtLocation(file, directory):
+            # Identify if the file is an Image .jpg .png .jpeg .svg .gif or .ico
+            if isImage(file):
+                path = Path(directory + "/" + "Images/")
+                file = directory + "/" + file
+                path.mkdir(exist_ok=True)
+                shutil.move(file, path)
 
-                # Identify if the file is an PDF .pdf
-                if isPDF(file):
-                    path = Path(directory + "/" + "PDFs/")
-                    file = directory + "/" + file
-                    path.mkdir(exist_ok=True)
-                    shutil.move(file, path)
+            # Identify if the file is an PDF .pdf
+            if isPDF(file):
+                path = Path(directory + "/" + "PDFs/")
+                file = directory + "/" + file
+                path.mkdir(exist_ok=True)
+                shutil.move(file, path)
 
-                # Identify if a file is an Sheet .xls, .xlsx or .csv 
-                if isSheet(file):
-                    path = Path(directory + "/" + "Sheets/")
-                    file = directory + "/" + file
-                    path.mkdir(exist_ok=True)
-                    shutil.move(file, path)
+            # Identify if a file is an Sheet .xls, .xlsx or .csv 
+            if isSheet(file):
+                path = Path(directory + "/" + "Sheets/")
+                file = directory + "/" + file
+                path.mkdir(exist_ok=True)
+                shutil.move(file, path)
 
-                # Identify if a file is .doc or .docx
-                if isDocOrDocx(file):
-                    path = Path(directory + "/" + "Docs/")
-                    file = directory + "/" + file
-                    path.mkdir(exist_ok=True)
-                    shutil.move(file, path)
+            # Identify if a file is .doc or .docx
+            if isDocOrDocx(file):
+                path = Path(directory + "/" + "Docs/")
+                file = directory + "/" + file
+                path.mkdir(exist_ok=True)
+                shutil.move(file, path)
 
-                # Identify if a file is .ppt or .pptx
-                if isPptOrPptx(file):
-                    path = Path(directory + "/" + "Slides/")
-                    file = directory + "/" + file
-                    path.mkdir(exist_ok=True)
-                    shutil.move(file, path)
+            # Identify if a file is .ppt or .pptx
+            if isPptOrPptx(file):
+                path = Path(directory + "/" + "Slides/")
+                file = directory + "/" + file
+                path.mkdir(exist_ok=True)
+                shutil.move(file, path)
 
-                # Identify if a file is .zip or .rar
-                if isZipOrRar(file):
-                    path = Path(directory + "/" + "Zips/")
-                    file = directory + "/" + file
-                    path.mkdir(exist_ok=True)
-                    shutil.move(file, path)
+            # Identify if a file is .zip or .rar
+            if isZipOrRar(file):
+                path = Path(directory + "/" + "Zips/")
+                file = directory + "/" + file
+                path.mkdir(exist_ok=True)
+                shutil.move(file, path)
+
+@click.command()
+@click.argument('filename', nargs=1, required=True)
+@click.argument('directory', type=click.Path(exists=True, allow_dash=True, path_type=pathlib.Path), required=True)
+def extract(filename, directory):
+    """Extract a .zip or .rar files in a directory """
+    if os.path.isfile(filename):
+        filename = zipfile.ZipFile(filename, 'r')
+        filename.extractall(path=directory)
+        click.secho(f'File successfully extracted', fg='bright_green')
 
 
 
@@ -174,6 +172,7 @@ options.add_command(listFiles)
 options.add_command(organize)
 options.add_command(move_file)
 options.add_command(delete_file)
+options.add_command(extract)
 omicron.add_command(options)
 
 
