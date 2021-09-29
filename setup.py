@@ -8,7 +8,7 @@ setup(
     ],
     version='0.0.0',
     entry_points='''
-    [console_scripts]
-    omicron=omicron:omicron
+    [console_scripts] 
+    omicron=omicron:cli
     '''
 )
