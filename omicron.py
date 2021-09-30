@@ -32,9 +32,12 @@ class Directory(object):
 @click.group(cls=Omicron, help='This tool\'s subcommands are loaded from a '
                                'plugin folder dynamically.')
 @click.pass_context
-@click.option('-d', '--dir', help='This will be the main '
-              'directory that u will be able to delete,'
-              'extract, list, move, or organize')
+@click.option('-d', '--dir', type=click.Path( exists=True,
+                                              allow_dash=True,    
+                                              path_type=pathlib.Path), 
+              help='This will be the main '
+                   'directory that u will be able to delete,'
+                   'extract, list, move, or organize')
 def cli(ctx, dir):
     ctx.obj = Directory(dir)
 

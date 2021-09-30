@@ -10,7 +10,8 @@ import zipfile
 @click.pass_obj
 def cli(obj: pathlib.Path, filename: str) -> None:
     """Extract a .zip or .rar files in a directory """
-    if os.path.isfile(filename):
-        filename = zipfile.ZipFile(filename, 'r')
+    src = obj.dir + "/" + filename 
+    if os.path.isfile(src):
+        filename = zipfile.ZipFile(src, 'r')
         filename.extractall(path=obj.dir)
         click.secho("File successfully extracted", fg='bright_green')

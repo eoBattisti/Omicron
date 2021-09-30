@@ -100,3 +100,5 @@ def cli(obj):
                 file = obj.dir + "/" + file
                 path.mkdir(exist_ok=True)
                 shutil.move(file, path)
+    
+    click.secho(f'{obj.dir} successfully organized', fg='bright_green')

@@ -21,12 +21,14 @@ def cli(obj: pathlib.Path, filename: str, destiny: pathlib.Path) -> None:
     # if the obj.dir instantiated is a valid dir and
     # the filename is a valid file in the same
     # directory, move the file to the destiny
-    if os.path.isdir(obj.dir):
+    try:
         src: pathlib.Path = obj.dir + "/" + filename
-        if os.path.isfile(src):
-            shutil.move(src, destiny)
-            click.secho(f'{filename} moved to {destiny}', fg='green')
-        else:
-            click.secho("isnt a file")
-    else:
-        click.secho("error ocurred")
+        if not os.path.isfile(src):
+            raise Exception(f'{filename} does not exist')
+
+        shutil.move(src, destiny)
+        click.secho(f'{filename} moved to {destiny}', fg='bright_green')
+    
+    except Exception as error:
+        click.secho(f'An error occurred: {error}', fg='bright_red')
+    
