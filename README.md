@@ -30,7 +30,7 @@ Omicron is a Command Line Interface -- CLI building to delete, extract, list, mo
 - goes to setup.py
 - in the terminal:
 
-``` pip install . -e ```
+``` pip install -e . ```
 
 ## Motivation
 So, I decided to code that project because I was bored that always I needed to organize my directories and folders, and know the challenges building a CLI program,
